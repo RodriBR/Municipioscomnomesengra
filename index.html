@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>Municípios com nomes engraçados</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/Municpioscomnomesengraados_1.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[-44.85084657413309,-82.64804777816838],[11.167711607467318,-10.198225078975076]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var title = new L.Control({'position':'topright'});
+        title.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+        title.update = function () {
+            this._div.innerHTML = '<h2>Municípios com nomes engraçados</br></br><button id="css/form.css"><a href="https://forms.gle/aYLTgyibZnSE1ytNA" target=_blank title="https://forms.gle/aYLTgyibZnSE1ytNA" > Envie uma sugestão de município para o mapa </a></button></h2></h2>';
+        };
+        title.addTo(map);
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_OSMStandard_0');
+        map.getPane('pane_OSMStandard_0').style.zIndex = 400;
+        var layer_OSMStandard_0 = L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OSMStandard_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors, CC-BY-SA</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_OSMStandard_0;
+        map.addLayer(layer_OSMStandard_0);
+        function pop_Municpioscomnomesengraados_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Nome</th>\
+                        <td>' + (feature.properties['Nome'] !== null ? autolinker.link(feature.properties['Nome'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Estado</th>\
+                        <td>' + (feature.properties['Estado'] !== null ? autolinker.link(feature.properties['Estado'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Area(km²)</th>\
+                        <td>' + (feature.properties['Area(km²)'] !== null ? autolinker.link(feature.properties['Area(km²)'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Informação</th>\
+                        <td class="visible-with-data" id="Informação">' + (feature.properties['Informação'] !== null ? autolinker.link(feature.properties['Informação'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Municpioscomnomesengraados_1_0() {
+            return {
+                pane: 'pane_Municpioscomnomesengraados_1',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(128,17,25,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,30,42,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Municpioscomnomesengraados_1');
+        map.getPane('pane_Municpioscomnomesengraados_1').style.zIndex = 401;
+        map.getPane('pane_Municpioscomnomesengraados_1').style['mix-blend-mode'] = 'normal';
+        var layer_Municpioscomnomesengraados_1 = new L.geoJson(json_Municpioscomnomesengraados_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Municpioscomnomesengraados_1',
+            layerName: 'layer_Municpioscomnomesengraados_1',
+            pane: 'pane_Municpioscomnomesengraados_1',
+            onEachFeature: pop_Municpioscomnomesengraados_1,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Municpioscomnomesengraados_1_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Municpioscomnomesengraados_1);
+        map.addLayer(layer_Municpioscomnomesengraados_1);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        setBounds();
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"Nome": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Nome = document.createElement('div');
+            div_Nome.id = "div_Nome";
+            div_Nome.className= "filterselect";
+            document.getElementById("menu").appendChild(div_Nome);
+            sel_Nome = document.createElement('select');
+            sel_Nome.multiple = true;
+            sel_Nome.size = 10;
+            sel_Nome.id = "sel_Nome";
+            var Nome_options_str = "<option value='' unselected></option>";
+            sel_Nome.onchange = function(){filterFunc()};
+            Nome_options_str  += '<option value="Agricolândia">Agricolândia</option>';
+            Nome_options_str  += '<option value="Alexandria">Alexandria</option>';
+            Nome_options_str  += '<option value="Altinho">Altinho</option>';
+            Nome_options_str  += '<option value="Altos">Altos</option>';
+            Nome_options_str  += '<option value="Angélica">Angélica</option>';
+            Nome_options_str  += '<option value="Anta Gorda">Anta Gorda</option>';
+            Nome_options_str  += '<option value="Antas">Antas</option>';
+            Nome_options_str  += '<option value="Arara">Arara</option>';
+            Nome_options_str  += '<option value="Areia">Areia</option>';
+            Nome_options_str  += '<option value="Augustinópolis">Augustinópolis</option>';
+            Nome_options_str  += '<option value="Açailândia">Açailândia</option>';
+            Nome_options_str  += '<option value="Babaçulândia">Babaçulândia</option>';
+            Nome_options_str  += '<option value="Bagre">Bagre</option>';
+            Nome_options_str  += '<option value="Balneário Gaivota">Balneário Gaivota</option>';
+            Nome_options_str  += '<option value="Balneário Piçarras">Balneário Piçarras</option>';
+            Nome_options_str  += '<option value="Bananal">Bananal</option>';
+            Nome_options_str  += '<option value="Barcelona">Barcelona</option>';
+            Nome_options_str  += '<option value="Barro">Barro</option>';
+            Nome_options_str  += '<option value="Barro Duro">Barro Duro</option>';
+            Nome_options_str  += '<option value="Barrolândia">Barrolândia</option>';
+            Nome_options_str  += '<option value="Barroso">Barroso</option>';
+            Nome_options_str  += '<option value="Baía da Traição">Baía da Traição</option>';
+            Nome_options_str  += '<option value="Belo Jardim">Belo Jardim</option>';
+            Nome_options_str  += '<option value="Benedito Leite">Benedito Leite</option>';
+            Nome_options_str  += '<option value="Bezerros">Bezerros</option>';
+            Nome_options_str  += '<option value="Boa Hora">Boa Hora</option>';
+            Nome_options_str  += '<option value="Boca do Acre">Boca do Acre</option>';
+            Nome_options_str  += '<option value="Bofete">Bofete</option>';
+            Nome_options_str  += '<option value="Bom Lugar">Bom Lugar</option>';
+            Nome_options_str  += '<option value="Bom Princípio">Bom Princípio</option>';
+            Nome_options_str  += '<option value="Bom Progresso">Bom Progresso</option>';
+            Nome_options_str  += '<option value="Bom Repouso">Bom Repouso</option>';
+            Nome_options_str  += '<option value="Bom Sucesso">Bom Sucesso</option>';
+            Nome_options_str  += '<option value="Bombinhas">Bombinhas</option>';
+            Nome_options_str  += '<option value="Bonfim">Bonfim</option>';
+            Nome_options_str  += '<option value="Bonito">Bonito</option>';
+            Nome_options_str  += '<option value="Boqueirão do Leão">Boqueirão do Leão</option>';
+            Nome_options_str  += '<option value="Brasileira">Brasileira</option>';
+            Nome_options_str  += '<option value="Braço do Trombudo">Braço do Trombudo</option>';
+            Nome_options_str  += '<option value="Brejinho">Brejinho</option>';
+            Nome_options_str  += '<option value="Brejo">Brejo</option>';
+            Nome_options_str  += '<option value="Brejo Santo">Brejo Santo</option>';
+            Nome_options_str  += '<option value="Brejolândia">Brejolândia</option>';
+            Nome_options_str  += '<option value="Brejão">Brejão</option>';
+            Nome_options_str  += '<option value="Brodowski">Brodowski</option>';
+            Nome_options_str  += '<option value="Bueno Brandão">Bueno Brandão</option>';
+            Nome_options_str  += '<option value="Buenos Aires">Buenos Aires</option>';
+            Nome_options_str  += '<option value="Cabaceiras">Cabaceiras</option>';
+            Nome_options_str  += '<option value="Cabeceira Grande">Cabeceira Grande</option>';
+            Nome_options_str  += '<option value="Cacaulândia">Cacaulândia</option>';
+            Nome_options_str  += '<option value="Caldeirão Grande do Piauí">Caldeirão Grande do Piauí</option>';
+            Nome_options_str  += '<option value="Califórnia">Califórnia</option>';
+            Nome_options_str  += '<option value="Campo Alegre do Fidalgo">Campo Alegre do Fidalgo</option>';
+            Nome_options_str  += '<option value="Campo Magro">Campo Magro</option>';
+            Nome_options_str  += '<option value="Campo Maior">Campo Maior</option>';
+            Nome_options_str  += '<option value="Canhotinho">Canhotinho</option>';
+            Nome_options_str  += '<option value="Capim">Capim</option>';
+            Nome_options_str  += '<option value="Capim Grosso">Capim Grosso</option>';
+            Nome_options_str  += '<option value="Capinzal do Norte">Capinzal do Norte</option>';
+            Nome_options_str  += '<option value="Caracol">Caracol</option>';
+            Nome_options_str  += '<option value="Carneirinho">Carneirinho</option>';
+            Nome_options_str  += '<option value="Carolina">Carolina</option>';
+            Nome_options_str  += '<option value="Carrapateira">Carrapateira</option>';
+            Nome_options_str  += '<option value="Carrasco Bonito">Carrasco Bonito</option>';
+            Nome_options_str  += '<option value="Cascavel">Cascavel</option>';
+            Nome_options_str  += '<option value="Casinhas">Casinhas</option>';
+            Nome_options_str  += '<option value="Centro do Guilherme">Centro do Guilherme</option>';
+            Nome_options_str  += '<option value="Chapada">Chapada</option>';
+            Nome_options_str  += '<option value="Chapada da Natividade">Chapada da Natividade</option>';
+            Nome_options_str  += '<option value="Chapadinha">Chapadinha</option>';
+            Nome_options_str  += '<option value="Chapadão do Lageado">Chapadão do Lageado</option>';
+            Nome_options_str  += '<option value="Chapadão do Sul">Chapadão do Sul</option>';
+            Nome_options_str  += '<option value="Chaves">Chaves</option>';
+            Nome_options_str  += '<option value="Chiador">Chiador</option>';
+            Nome_options_str  += '<option value="Chopinzinho">Chopinzinho</option>';
+            Nome_options_str  += '<option value="Chuvisca">Chuvisca</option>';
+            Nome_options_str  += '<option value="Cidade Gaúcha">Cidade Gaúcha</option>';
+            Nome_options_str  += '<option value="Cidade Ocidental">Cidade Ocidental</option>';
+            Nome_options_str  += '<option value="Cláudia">Cláudia</option>';
+            Nome_options_str  += '<option value="Cláudio">Cláudio</option>';
+            Nome_options_str  += '<option value="Cocal">Cocal</option>';
+            Nome_options_str  += '<option value="Cocal de Telha">Cocal de Telha</option>';
+            Nome_options_str  += '<option value="Cocalzinho de Goiás">Cocalzinho de Goiás</option>';
+            Nome_options_str  += '<option value="Cocos">Cocos</option>';
+            Nome_options_str  += '<option value="Colméia">Colméia</option>';
+            Nome_options_str  += '<option value="Combinado">Combinado</option>';
+            Nome_options_str  += '<option value="Comercinho">Comercinho</option>';
+            Nome_options_str  += '<option value="Congonhal">Congonhal</option>';
+            Nome_options_str  += '<option value="Cordisburgo">Cordisburgo</option>';
+            Nome_options_str  += '<option value="Cordislândia">Cordislândia</option>';
+            Nome_options_str  += '<option value="Corguinho">Corguinho</option>';
+            Nome_options_str  += '<option value="Corinto">Corinto</option>';
+            Nome_options_str  += '<option value="Cornélio Procópio">Cornélio Procópio</option>';
+            Nome_options_str  += '<option value="Correia Pinto">Correia Pinto</option>';
+            Nome_options_str  += '<option value="Costa Rica">Costa Rica</option>';
+            Nome_options_str  += '<option value="Cristina">Cristina</option>';
+            Nome_options_str  += '<option value="Cuparaque">Cuparaque</option>';
+            Nome_options_str  += '<option value="Currais">Currais</option>';
+            Nome_options_str  += '<option value="Curralinho">Curralinho</option>';
+            Nome_options_str  += '<option value="Curralinhos">Curralinhos</option>';
+            Nome_options_str  += '<option value="Curvelândia">Curvelândia</option>';
+            Nome_options_str  += '<option value="Cutias">Cutias</option>';
+            Nome_options_str  += '<option value="Denise">Denise</option>';
+            Nome_options_str  += '<option value="Derrubadas">Derrubadas</option>';
+            Nome_options_str  += '<option value="Descanso">Descanso</option>';
+            Nome_options_str  += '<option value="Descoberto">Descoberto</option>';
+            Nome_options_str  += '<option value="Dezesseis de Novembro">Dezesseis de Novembro</option>';
+            Nome_options_str  += '<option value="Diamante D&apos;Oeste">Diamante D&apos;Oeste</option>';
+            Nome_options_str  += '<option value="Diamante do Norte">Diamante do Norte</option>';
+            Nome_options_str  += '<option value="Diamante do Sul">Diamante do Sul</option>';
+            Nome_options_str  += '<option value="Dois Vizinhos">Dois Vizinhos</option>';
+            Nome_options_str  += '<option value="Dormentes">Dormentes</option>';
+            Nome_options_str  += '<option value="Doutor Pedrinho">Doutor Pedrinho</option>';
+            Nome_options_str  += '<option value="Eldorado">Eldorado</option>';
+            Nome_options_str  += '<option value="Emas">Emas</option>';
+            Nome_options_str  += '<option value="Epitaciolândia">Epitaciolândia</option>';
+            Nome_options_str  += '<option value="Erebango">Erebango</option>';
+            Nome_options_str  += '<option value="Escada">Escada</option>';
+            Nome_options_str  += '<option value="Espera Feliz">Espera Feliz</option>';
+            Nome_options_str  += '<option value="Espumoso">Espumoso</option>';
+            Nome_options_str  += '<option value="Extremoz">Extremoz</option>';
+            Nome_options_str  += '<option value="Fartura">Fartura</option>';
+            Nome_options_str  += '<option value="Faxinal do Soturno">Faxinal do Soturno</option>';
+            Nome_options_str  += '<option value="Faxinalzinho">Faxinalzinho</option>';
+            Nome_options_str  += '<option value="Feliz Deserto">Feliz Deserto</option>';
+            Nome_options_str  += '<option value="Feliz Natal">Feliz Natal</option>';
+            Nome_options_str  += '<option value="Flórida">Flórida</option>';
+            Nome_options_str  += '<option value="Flórida Paulista">Flórida Paulista</option>';
+            Nome_options_str  += '<option value="Formiga">Formiga</option>';
+            Nome_options_str  += '<option value="Formigueiro">Formigueiro</option>';
+            Nome_options_str  += '<option value="Formosa">Formosa</option>';
+            Nome_options_str  += '<option value="Formoso">Formoso</option>';
+            Nome_options_str  += '<option value="Fundão">Fundão</option>';
+            Nome_options_str  += '<option value="Fênix">Fênix</option>';
+            Nome_options_str  += '<option value="Gado Bravo">Gado Bravo</option>';
+            Nome_options_str  += '<option value="Galiléia">Galiléia</option>';
+            Nome_options_str  += '<option value="Galinhos">Galinhos</option>';
+            Nome_options_str  += '<option value="Garça">Garça</option>';
+            Nome_options_str  += '<option value="Gavião">Gavião</option>';
+            Nome_options_str  += '<option value="Gentil">Gentil</option>';
+            Nome_options_str  += '<option value="Graça">Graça</option>';
+            Nome_options_str  += '<option value="Graça Aranha">Graça Aranha</option>';
+            Nome_options_str  += '<option value="Heitoraí">Heitoraí</option>';
+            Nome_options_str  += '<option value="Inocência">Inocência</option>';
+            Nome_options_str  += '<option value="Israelândia">Israelândia</option>';
+            Nome_options_str  += '<option value="Jaboticatubas">Jaboticatubas</option>';
+            Nome_options_str  += '<option value="Jacaré dos Homens">Jacaré dos Homens</option>';
+            Nome_options_str  += '<option value="Jacinto">Jacinto</option>';
+            Nome_options_str  += '<option value="Jacinto Machado">Jacinto Machado</option>';
+            Nome_options_str  += '<option value="Jacuizinho">Jacuizinho</option>';
+            Nome_options_str  += '<option value="Jesúpolis">Jesúpolis</option>';
+            Nome_options_str  += '<option value="Jijoca de Jericoacoara">Jijoca de Jericoacoara</option>';
+            Nome_options_str  += '<option value="Jóia">Jóia</option>';
+            Nome_options_str  += '<option value="Ladainha">Ladainha</option>';
+            Nome_options_str  += '<option value="Lagarto">Lagarto</option>';
+            Nome_options_str  += '<option value="Lagoa d&apos;Anta">Lagoa d&apos;Anta</option>';
+            Nome_options_str  += '<option value="Lagoa da Confusão">Lagoa da Confusão</option>';
+            Nome_options_str  += '<option value="Lagoa de Velhos">Lagoa de Velhos</option>';
+            Nome_options_str  += '<option value="Lambari">Lambari</option>';
+            Nome_options_str  += '<option value="Laranjal">Laranjal</option>';
+            Nome_options_str  += '<option value="Laranjal Paulista">Laranjal Paulista</option>';
+            Nome_options_str  += '<option value="Laranjal do Jari">Laranjal do Jari</option>';
+            Nome_options_str  += '<option value="Lençóis Paulista">Lençóis Paulista</option>';
+            Nome_options_str  += '<option value="Lontra">Lontra</option>';
+            Nome_options_str  += '<option value="Lourdes">Lourdes</option>';
+            Nome_options_str  += '<option value="Luiziânia">Luiziânia</option>';
+            Nome_options_str  += '<option value="Luminárias">Luminárias</option>';
+            Nome_options_str  += '<option value="Luz">Luz</option>';
+            Nome_options_str  += '<option value="Macedônia">Macedônia</option>';
+            Nome_options_str  += '<option value="Machadinho">Machadinho</option>';
+            Nome_options_str  += '<option value="Madre de Deus">Madre de Deus</option>';
+            Nome_options_str  += '<option value="Malacacheta">Malacacheta</option>';
+            Nome_options_str  += '<option value="Mamonas">Mamonas</option>';
+            Nome_options_str  += '<option value="Mangueirinha">Mangueirinha</option>';
+            Nome_options_str  += '<option value="Maravilha">Maravilha</option>';
+            Nome_options_str  += '<option value="Marcolândia">Marcolândia</option>';
+            Nome_options_str  += '<option value="Maribondo">Maribondo</option>';
+            Nome_options_str  += '<option value="Mascote">Mascote</option>';
+            Nome_options_str  += '<option value="Mata">Mata</option>';
+            Nome_options_str  += '<option value="Matinha">Matinha</option>';
+            Nome_options_str  += '<option value="Mato Leitão">Mato Leitão</option>';
+            Nome_options_str  += '<option value="Mato Queimado">Mato Queimado</option>';
+            Nome_options_str  += '<option value="Matões">Matões</option>';
+            Nome_options_str  += '<option value="Messias">Messias</option>';
+            Nome_options_str  += '<option value="Mimoso de Goiás">Mimoso de Goiás</option>';
+            Nome_options_str  += '<option value="Mimoso do Sul">Mimoso do Sul</option>';
+            Nome_options_str  += '<option value="Mormaço">Mormaço</option>';
+            Nome_options_str  += '<option value="Morro Cabeça no Tempo">Morro Cabeça no Tempo</option>';
+            Nome_options_str  += '<option value="Mostardas">Mostardas</option>';
+            Nome_options_str  += '<option value="Mundo Novo">Mundo Novo</option>';
+            Nome_options_str  += '<option value="Nortelândia">Nortelândia</option>';
+            Nome_options_str  += '<option value="Nova Iorque">Nova Iorque</option>';
+            Nome_options_str  += '<option value="Novo Acordo">Novo Acordo</option>';
+            Nome_options_str  += '<option value="Novo Mundo">Novo Mundo</option>';
+            Nome_options_str  += '<option value="Não-Me-Toque">Não-Me-Toque</option>';
+            Nome_options_str  += '<option value="Ouvidor">Ouvidor</option>';
+            Nome_options_str  += '<option value="Palestina">Palestina</option>';
+            Nome_options_str  += '<option value="Palestina do Pará">Palestina do Pará</option>';
+            Nome_options_str  += '<option value="Palmas">Palmas</option>';
+            Nome_options_str  += '<option value="Palmitinho">Palmitinho</option>';
+            Nome_options_str  += '<option value="Papagaios">Papagaios</option>';
+            Nome_options_str  += '<option value="Paraibano">Paraibano</option>';
+            Nome_options_str  += '<option value="Paranacity">Paranacity</option>';
+            Nome_options_str  += '<option value="Paraí">Paraí</option>';
+            Nome_options_str  += '<option value="Pareci Novo">Pareci Novo</option>';
+            Nome_options_str  += '<option value="Parecis">Parecis</option>';
+            Nome_options_str  += '<option value="Passa Quatro">Passa Quatro</option>';
+            Nome_options_str  += '<option value="Passa Tempo">Passa Tempo</option>';
+            Nome_options_str  += '<option value="Passa Vinte">Passa Vinte</option>';
+            Nome_options_str  += '<option value="Passa e Fica">Passa e Fica</option>';
+            Nome_options_str  += '<option value="Passabém">Passabém</option>';
+            Nome_options_str  += '<option value="Patrocínio">Patrocínio</option>';
+            Nome_options_str  += '<option value="Patrocínio Paulista">Patrocínio Paulista</option>';
+            Nome_options_str  += '<option value="Pau Brasil">Pau Brasil</option>';
+            Nome_options_str  += '<option value="Pau D&apos;Arco">Pau D&apos;Arco</option>';
+            Nome_options_str  += '<option value="Pau D&apos;Arco do Piauí">Pau D&apos;Arco do Piauí</option>';
+            Nome_options_str  += '<option value="Pau dos Ferros">Pau dos Ferros</option>';
+            Nome_options_str  += '<option value="Paudalho">Paudalho</option>';
+            Nome_options_str  += '<option value="Paulicéia">Paulicéia</option>';
+            Nome_options_str  += '<option value="Paulista">Paulista</option>';
+            Nome_options_str  += '<option value="Paulistas">Paulistas</option>';
+            Nome_options_str  += '<option value="Paulistânia">Paulistânia</option>';
+            Nome_options_str  += '<option value="Paulo Jacinto">Paulo Jacinto</option>';
+            Nome_options_str  += '<option value="Paulínia">Paulínia</option>';
+            Nome_options_str  += '<option value="Pavão">Pavão</option>';
+            Nome_options_str  += '<option value="Pedra Mole">Pedra Mole</option>';
+            Nome_options_str  += '<option value="Pedregulho">Pedregulho</option>';
+            Nome_options_str  += '<option value="Pedrinhas">Pedrinhas</option>';
+            Nome_options_str  += '<option value="Pedrinhas Paulista">Pedrinhas Paulista</option>';
+            Nome_options_str  += '<option value="Peixe">Peixe</option>';
+            Nome_options_str  += '<option value="Peixe-Boi">Peixe-Boi</option>';
+            Nome_options_str  += '<option value="Pelotas">Pelotas</option>';
+            Nome_options_str  += '<option value="Pequizeiro">Pequizeiro</option>';
+            Nome_options_str  += '<option value="Perdigão">Perdigão</option>';
+            Nome_options_str  += '<option value="Periquito">Periquito</option>';
+            Nome_options_str  += '<option value="Pescaria Brava">Pescaria Brava</option>';
+            Nome_options_str  += '<option value="Peçanha">Peçanha</option>';
+            Nome_options_str  += '<option value="Picada Café">Picada Café</option>';
+            Nome_options_str  += '<option value="Pimenta Bueno">Pimenta Bueno</option>';
+            Nome_options_str  += '<option value="Pinhão">Pinhão</option>';
+            Nome_options_str  += '<option value="Pintópolis">Pintópolis</option>';
+            Nome_options_str  += '<option value="Pio XII">Pio XII</option>';
+            Nome_options_str  += '<option value="Piracanjuba">Piracanjuba</option>';
+            Nome_options_str  += '<option value="Piranhas">Piranhas</option>';
+            Nome_options_str  += '<option value="Piçarra">Piçarra</option>';
+            Nome_options_str  += '<option value="Ponta Grossa">Ponta Grossa</option>';
+            Nome_options_str  += '<option value="Porto Calvo">Porto Calvo</option>';
+            Nome_options_str  += '<option value="Poço Redondo">Poço Redondo</option>';
+            Nome_options_str  += '<option value="Presidente Kennedy">Presidente Kennedy</option>';
+            Nome_options_str  += '<option value="Primavera">Primavera</option>';
+            Nome_options_str  += '<option value="Princesa">Princesa</option>';
+            Nome_options_str  += '<option value="Professor Jamil">Professor Jamil</option>';
+            Nome_options_str  += '<option value="Putinga">Putinga</option>';
+            Nome_options_str  += '<option value="Quatro Irmãos">Quatro Irmãos</option>';
+            Nome_options_str  += '<option value="Queimada Nova">Queimada Nova</option>';
+            Nome_options_str  += '<option value="Quinze de Novembro">Quinze de Novembro</option>';
+            Nome_options_str  += '<option value="Raposa">Raposa</option>';
+            Nome_options_str  += '<option value="Recursolândia">Recursolândia</option>';
+            Nome_options_str  += '<option value="Regeneração">Regeneração</option>';
+            Nome_options_str  += '<option value="Ressaquinha">Ressaquinha</option>';
+            Nome_options_str  += '<option value="Riacho Frio">Riacho Frio</option>';
+            Nome_options_str  += '<option value="Rio Acima">Rio Acima</option>';
+            Nome_options_str  += '<option value="Rio Bananal">Rio Bananal</option>';
+            Nome_options_str  += '<option value="Rolador">Rolador</option>';
+            Nome_options_str  += '<option value="Rolante">Rolante</option>';
+            Nome_options_str  += '<option value="Roncador">Roncador</option>';
+            Nome_options_str  += '<option value="Russas">Russas</option>';
+            Nome_options_str  += '<option value="Salgadinho">Salgadinho</option>';
+            Nome_options_str  += '<option value="Salgado">Salgado</option>';
+            Nome_options_str  += '<option value="Sanclerlândia">Sanclerlândia</option>';
+            Nome_options_str  += '<option value="Santa Filomena do Maranhão">Santa Filomena do Maranhão</option>';
+            Nome_options_str  += '<option value="Saudades">Saudades</option>';
+            Nome_options_str  += '<option value="Segredo">Segredo</option>';
+            Nome_options_str  += '<option value="Sem-Peixe">Sem-Peixe</option>';
+            Nome_options_str  += '<option value="Serra da Saudade">Serra da Saudade</option>';
+            Nome_options_str  += '<option value="Serrinha dos Pintos">Serrinha dos Pintos</option>';
+            Nome_options_str  += '<option value="Sete Quedas">Sete Quedas</option>';
+            Nome_options_str  += '<option value="Sobradinho">Sobradinho</option>';
+            Nome_options_str  += '<option value="Sorriso">Sorriso</option>';
+            Nome_options_str  += '<option value="Sossêgo">Sossêgo</option>';
+            Nome_options_str  += '<option value="Sul Brasil">Sul Brasil</option>';
+            Nome_options_str  += '<option value="Surubim">Surubim</option>';
+            Nome_options_str  += '<option value="São José do Peixe">São José do Peixe</option>';
+            Nome_options_str  += '<option value="São João da Baliza">São João da Baliza</option>';
+            Nome_options_str  += '<option value="São João da Urtiga">São João da Urtiga</option>';
+            Nome_options_str  += '<option value="São João do Pau d&apos;Alho">São João do Pau d&apos;Alho</option>';
+            Nome_options_str  += '<option value="São Miguel do Gostoso">São Miguel do Gostoso</option>';
+            Nome_options_str  += '<option value="São Miguel do Passa Quatro">São Miguel do Passa Quatro</option>';
+            Nome_options_str  += '<option value="Sério">Sério</option>';
+            Nome_options_str  += '<option value="Tailândia">Tailândia</option>';
+            Nome_options_str  += '<option value="Tartarugalzinho">Tartarugalzinho</option>';
+            Nome_options_str  += '<option value="Tio Hugo">Tio Hugo</option>';
+            Nome_options_str  += '<option value="Tiradentes">Tiradentes</option>';
+            Nome_options_str  += '<option value="Tiros">Tiros</option>';
+            Nome_options_str  += '<option value="Travesseiro">Travesseiro</option>';
+            Nome_options_str  += '<option value="Trombas">Trombas</option>';
+            Nome_options_str  += '<option value="Trombudo Central">Trombudo Central</option>';
+            Nome_options_str  += '<option value="Tucano">Tucano</option>';
+            Nome_options_str  += '<option value="União Paulista">União Paulista</option>';
+            Nome_options_str  += '<option value="Venha-Ver">Venha-Ver</option>';
+            Nome_options_str  += '<option value="Ventania">Ventania</option>';
+            Nome_options_str  += '<option value="Verdelândia">Verdelândia</option>';
+            Nome_options_str  += '<option value="Wagner">Wagner</option>';
+            Nome_options_str  += '<option value="Wanderley">Wanderley</option>';
+            Nome_options_str  += '<option value="Xique-Xique">Xique-Xique</option>';
+            Nome_options_str  += '<option value="Zacarias">Zacarias</option>';
+            Nome_options_str  += '<option value="Zé Doca">Zé Doca</option>';
+            Nome_options_str  += '<option value="Água Fria">Água Fria</option>';
+            Nome_options_str  += '<option value="Águas Frias">Águas Frias</option>';
+            Nome_options_str  += '<option value="Águas Mornas">Águas Mornas</option>';
+            Nome_options_str  += '<option value="Ângulo">Ângulo</option>';
+            sel_Nome.innerHTML = Nome_options_str;
+            div_Nome.appendChild(sel_Nome);
+            var lab_Nome = document.createElement('div');
+            lab_Nome.innerHTML = 'Nome';
+            lab_Nome.className = 'filterlabel';
+            div_Nome.appendChild(lab_Nome);
+            var reset_Nome = document.createElement('div');
+            reset_Nome.innerHTML = 'clear filter';
+            reset_Nome.className = 'filterlabel';
+            reset_Nome.onclick = function() {
+                var options = document.getElementById("sel_Nome").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_Nome.appendChild(reset_Nome);
+        </script>
+    </body>
+</html>
